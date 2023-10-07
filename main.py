@@ -2,6 +2,8 @@ import requests
 import db_api as commands
 import asyncio
 import json
+import time
+
 
 
 async def main():
@@ -40,16 +42,90 @@ async def main():
         'sec-fetch-site': 'same-origin',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
     }
-    response = requests.get('https://jetlend.ru/invest/api/requests/waiting', cookies=cookies, headers=headers).json()
+    while True:
+        # Отправляем запрос и получаем список id компаний
+        response = requests.get('https://jetlend.ru/invest/api/requests/waiting', cookies=cookies, headers=headers).json()
 
-    for num in response['id']:
 
-        await get_first_info(num, headers, cookies)
-        await get_two_info(num, headers, cookies)
-        await get_three_info(num, headers, cookies)
-        await get_four_info(num, headers, cookies)
-        await get_six_info(num, headers, cookies)
+        for num in response['requests']:
+            # Проверяем, есть ли id в БД
+            if not await commands.select_id_company(num['id']):
+                # Если id отсутствует, то добавляем его и получаем информацию
+                await add_company_and_get_info(num['id'], headers, cookies)
+                print(f'Добавляю в БД компанию с id {num}')
 
+
+        # Пауза на 10 секунд перед следующей проверкой
+        time.sleep(10)
+
+async def secondary_main():
+    cookies = {
+        '_jl_uid': 'vETZ4WUILvEgftokBER4Ag==',
+        '_gcl_au': '1.1.1801966748.1695035050',
+        'referrer': 'https://client.work-zilla.com/',
+        '_ym_uid': '1695035051576708091',
+        '_ym_d': '1695035051',
+        'tmr_lvid': '79a9abd783270f5e68cbc6f0ba57bfa2',
+        'tmr_lvidTS': '1695035055405',
+        '_tt_enable_cookie': '1',
+        '_ttp': 'rALbsDXw_v8KYn8xszNzyrPqCrx',
+        'jl_features': 'testFeature%3D10%25',
+        '_gid': 'GA1.2.367854592.1696489017',
+        '_ym_isad': '1',
+        'csrftoken': 'KHWlZUY6eRMNeMoHIazJyoOlj9yyy6nM',
+        'sessionid': 'l7u2s28gwebixr2jfejzs3qqsbqpxqz9',
+        'tmr_detect': '1%7C1696496681606',
+        '_ga_NR0DV46HQK': 'GS1.1.1696494907.3.1.1696496772.60.0.0',
+        '_ga': 'GA1.2.97225234.1695035049',
+        '_gat': '1',
+    }
+
+    headers = {
+        'authority': 'jetlend.ru',
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
+        'content-type': 'application/json;charset=utf-8',
+        'referer': 'https://jetlend.ru/invest/v3/company/16578/loans',
+        'sec-ch-ua': '"Google Chrome";v="117", "Not;A=Brand";v="8", "Chromium";v="117"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+    }
+
+    params = {
+        'limit': '100000',
+        'offset': '0',
+        'sort_dir': 'desc',
+        'sort_field': 'ytm',
+    }
+    while True:
+        # Отправляем запрос и получаем список id компаний
+        response = requests.get('https://jetlend.ru/invest/api/exchange/loans', params=params, cookies=cookies, headers=headers).json()
+
+
+        for num in response['data']:
+            # Проверяем, есть ли id в БД
+            if not await commands.select_id_company(num['loan_id']):
+                # Если id отсутствует, то добавляем его и получаем информацию
+                await add_company_and_get_info(num['loan_id'], headers, cookies)
+                print(f'Добавляю в БД компанию с id {num}')
+
+
+        # Пауза на 10 секунд перед следующей проверкой
+        time.sleep(10)
+
+
+# Функция для добавления компании в БД и получения информации
+async def add_company_and_get_info(company_id, headers, cookies):
+    await get_first_info(company_id, headers, cookies)
+    await get_two_info(company_id, headers, cookies)
+    await get_three_info(company_id, headers, cookies)
+    await get_four_info(company_id, headers, cookies)
+    await get_six_info(company_id, headers, cookies)
+    print(f'Компания {company_id} успешно добавлена.')
 
 async def get_first_info(num, headers, cookies):
     response = requests.get(f'https://jetlend.ru/invest/api/requests/{num}/info', cookies=cookies, headers=headers).json()
@@ -59,7 +135,6 @@ async def get_first_info(num, headers, cookies):
     loan_name = response['data'].get('loan_name', '')  # Название компании
     interest_rate = response['data'].get('interest_rate', '')  # ставка %
     term = response['data'].get('term', '') # Срок в днях
-    company = company + loan_name
     interest_rate = round(float(interest_rate) * 100, 2)
     await commands.add_primary_placement(company=company,
 
@@ -67,13 +142,6 @@ async def get_first_info(num, headers, cookies):
                                    interest_rate=str(interest_rate),
                                    term_in_days=str(term),
                                    id_company=int(num))
-    # # Вывод значений
-    # print('amount:', amount)
-    # print('company:', company)
-    # print('interest_rate:', interest_rate)
-    # print('term:', term)
-
-
 
 
 async def get_two_info(num, headers, cookies):
@@ -119,22 +187,6 @@ async def get_two_info(num, headers, cookies):
                                          revenue_for_year=str(revenueForPastYear),
                                          profit_for_year=str(profitForPastYear),
                                          user_list=str(management_info))
-    # Вывод значений
-    # print('Из раздела "details":')
-    # print('address:', address)
-    # print('inn:', inn_details)
-    # print('ogrn:', ogrn)
-    # print('primaryCatergory:', primaryCatergory)
-    # print('profile:', profile)
-    # print('registrationDate:', registrationDate)
-    # print('site:', site)
-    # print('revenueForPastYear', revenueForPastYear)
-    # print('profitForPastYear', profitForPastYear)
-    #
-    # print('\nИз раздела "management":')
-    # print(management_info)
-
-
 
 
 async def get_three_info(num, headers, cookies):
@@ -198,36 +250,6 @@ async def get_three_info(num, headers, cookies):
                             other=str(JetLend_next),
                             gos_contract_member=str(member_amount),
                             gos_contract_concluded=str(contract_amount))
-    # Вывод результатов
-    # print("Значения из arbitration_cases:")
-    # print(f"За все время (plaintiff): {plaintiff_all_time}")
-    # print(f"За все время (defendant): {defendant_all_time}")
-    # print(f"За один год (plaintiff): {plaintiff_one_year}")
-    # print(f"За один год (defendant): {defendant_one_year}")
-    # print(f"За три года (plaintiff): {plaintiff_three_years}")
-    # print(f"За три года (defendant): {defendant_three_years}")
-    #
-    # print("\nЗначения из enforcement:")
-    # print(f"За последний год (total_amount): {enforcement_last_year_total_amount}")
-    # print(f"За все время (total_amount): {enforcement_all_time_total_amount}")
-    #
-    # print("\nЗначения из taxes_fees:")
-    # print(f"fees_pfr: {fees_pfr}")
-    # print(f"total_payed: {total_payed}")
-    # print(f"vat: {vat}")
-    # print(f"transport_tax: {transport_tax}")
-    #
-    # print("\nЗначения из year_finances:")
-    # print(f"balance: {balance}")
-    # print(f"earnings: {earnings}")
-    # print(f"profit: {profit}")
-    # print(f'JetLend', {JetLend})
-    # print(f'JetLend_next', {JetLend_next})
-    # print(f'member_amount', {member_amount})
-    # print(f'contract_amount', {contract_amount})
-
-
-
 
 
 async def get_four_info(num, headers, cookies):
@@ -247,24 +269,6 @@ async def get_four_info(num, headers, cookies):
     companies_data_json = json.dumps(companies_data, ensure_ascii=False)
     await commands.add_fourth_step(id_company=num,
                                    all_issues=companies_data_json)
-    # print(companies_data)
-
-
-
-
-
-
-# def get_five_info(num, headers, cookies):
-#     response = requests.get(f'https://jetlend.ru/invest/api/exchange/loans/{num}/dom/summary', cookies=cookies, headers=headers).json()
-#
-#     # Извлечение значения last_price
-#     last_price = response["data"].get("last_price", "")
-#     ytm = response["data"].get("ytm", "")
-#
-#     # Вывод значения last_price
-#     print("last_price:", last_price)
-#     print("ytm:", ytm)
-
 
 
 async def get_six_info(num, headers, cookies):
@@ -283,7 +287,6 @@ async def get_six_info(num, headers, cookies):
     companies_data_json = json.dumps(events_list, ensure_ascii=False)
     await commands.add_fifth_step(id_company=num,
                                   events=companies_data_json)
-    # print(events_list)
 
 if __name__ == '__main__':
     async def loader():
