@@ -53,7 +53,11 @@ async def secondary_main():
     }
     while True:
         # Отправляем запрос и получаем список id компаний
-        response = requests.get('https://jetlend.ru/invest/api/exchange/loans', params=params, cookies=cookies, headers=headers).json()
+        try:
+            response = requests.get('https://jetlend.ru/invest/api/exchange/loans', params=params, cookies=cookies, headers=headers).json()
+        except Exception as ex:
+            print(f'Запрос не прошел: {ex}')
+            continue
 
         for num in response['data']:
             # Проверяем, есть ли id в БД
@@ -326,7 +330,11 @@ async def main():
     }
     while True:
         # Отправляем запрос и получаем список id компаний
-        response = requests.get('https://jetlend.ru/invest/api/requests/waiting', cookies=cookies, headers=headers).json()
+        try:
+            response = requests.get('https://jetlend.ru/invest/api/requests/waiting', cookies=cookies, headers=headers).json()
+        except Exception as ex:
+            print(f'Запрос не прошел: {ex}')
+            continue
 
 
         for num in response['requests']:
@@ -342,11 +350,61 @@ async def main():
 
 # Функция для добавления компании в БД и получения информации
 async def add_company_and_get_info(company_id, headers, cookies):
-    await get_first_info(company_id, headers, cookies)
-    await get_two_info(company_id, headers, cookies)
-    await get_three_info(company_id, headers, cookies)
-    await get_four_info(company_id, headers, cookies)
-    await get_six_info(company_id, headers, cookies)
+    try:
+        await get_first_info(company_id, headers, cookies)
+    except Exception as ex:
+        print(f'Сервис временно не доступен: {ex}')
+        # Получить информацию о компании
+        company_info = await commands.select_id_company(company_id)
+
+        # Если компания найдена в БД, удалить ее
+        if company_info:
+            await company_info.delete()
+        return False
+    try:
+        await get_two_info(company_id, headers, cookies)
+    except Exception as ex:
+        print(f'Сервис временно не доступен: {ex}')
+        # Получить информацию о компании
+        company_info = await commands.select_id_company(company_id)
+
+        # Если компания найдена в БД, удалить ее
+        if company_info:
+            await company_info.delete()
+        return False
+    try:
+        await get_three_info(company_id, headers, cookies)
+    except Exception as ex:
+        print(f'Сервис временно не доступен: {ex}')
+        # Получить информацию о компании
+        company_info = await commands.select_id_company(company_id)
+
+        # Если компания найдена в БД, удалить ее
+        if company_info:
+            await company_info.delete()
+        return False
+    try:
+        await get_four_info(company_id, headers, cookies)
+    except Exception as ex:
+        print(f'Сервис временно не доступен: {ex}')
+        # Получить информацию о компании
+        company_info = await commands.select_id_company(company_id)
+
+        # Если компания найдена в БД, удалить ее
+        if company_info:
+            await company_info.delete()
+        return False
+    try:
+        await get_six_info(company_id, headers, cookies)
+    except Exception as ex:
+        print(f'Сервис временно не доступен: {ex}')
+        # Получить информацию о компании
+        company_info = await commands.select_id_company(company_id)
+
+        # Если компания найдена в БД, удалить ее
+        if company_info:
+            await company_info.delete()
+        return False
     print(f'Рынок первичных размещений | Компания {company_id} успешно добавлена.')
 
 async def get_first_info(num, headers, cookies):
