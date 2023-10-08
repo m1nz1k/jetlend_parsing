@@ -1,5 +1,5 @@
 import requests
-
+import json
 cookies = {
     '_jl_uid': 'vETZ4WUILvEgftokBER4Ag==',
     '_gcl_au': '1.1.1801966748.1695035050',
@@ -46,7 +46,47 @@ params = {
     'sort_field': 'ytm',
 }
 
-response = requests.get('https://jetlend.ru/invest/api/exchange/loans', params=params, cookies=cookies, headers=headers).json()
+response = requests.get(f'https://jetlend.ru/invest/api/requests/16525/loans', cookies=cookies, headers=headers).json()
+# Создаем пустой список для хранения данных о компаниях
+companies_data = []
+sum_amount = 0.0
+# Перебираем каждую компанию и извлекаем необходимые данные
+for loan in response["loans"]:
+    amount = loan.get("amount", "")  # Сумма
+    sum_amount += float(amount)
+    interest_rate = loan.get("interest_rate", "")  # Ставка
+    interest_rate = round(float(interest_rate) * 100, 2)
 
-for num in response['data']:
-    print(num['loan_id'])
+    date = loan.get("date", "")  # Срок
+    date = date.split('T')[0]
+    rating_mapping = {
+        'AAA+': 1,
+        'AAA': 2,
+        'AA+': 3,
+        'AA': 4,
+        'A+': 5,
+        'A': 6,
+        'BBB+': 7,
+        'BBB': 8,
+        'BB+': 9,
+        'BB': 10,
+        'B+': 11,
+        'B': 12,
+        'CCC+': 13,
+        'CCC': 14,
+        'CC+': 15,
+        'CC': 16,
+        'C+': 17,
+        'C': 18
+    }
+
+    # Получение рейтинга в буквах из response
+    rating = loan.get('rating', '')  # Рейтинг
+
+    # Преобразование рейтинга в числовое значение
+    numeric_rating = rating_mapping.get(rating, None)
+    full_text = f'Сумма {amount} Ставка {interest_rate}% Дата {date} Рейтинг {numeric_rating}'
+    # Добавляем данные о компании в список
+    companies_data.append((full_text))
+companies_data_json = "\n".join(companies_data)
+

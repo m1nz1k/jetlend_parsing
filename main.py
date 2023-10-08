@@ -138,12 +138,38 @@ async def secondary_get_first_info(num, headers, cookies):
     interest_rate = response['data'].get('interest_rate', '')  # ставка %
     term = response['data'].get('term', '') # Срок в днях
     interest_rate = round(float(interest_rate) * 100, 2)
-    await commands.secondary_add_primary_placement(company=company,
+    rating_mapping = {
+        'AAA+': 1,
+        'AAA': 2,
+        'AA+': 3,
+        'AA': 4,
+        'A+': 5,
+        'A': 6,
+        'BBB+': 7,
+        'BBB': 8,
+        'BB+': 9,
+        'BB': 10,
+        'B+': 11,
+        'B': 12,
+        'CCC+': 13,
+        'CCC': 14,
+        'CC+': 15,
+        'CC': 16,
+        'C+': 17,
+        'C': 18
+    }
 
-                                   amount=str(amount),
-                                   interest_rate=str(interest_rate),
-                                   term_in_days=str(term),
-                                   id_company=int(num))
+    # Получение рейтинга в буквах из response
+    rating = response['data'].get('rating', '')  # Рейтинг
+
+    # Преобразование рейтинга в числовое значение
+    numeric_rating = rating_mapping.get(rating, None)
+    await commands.secondary_add_primary_placement(company=company,
+                                         rating=str(numeric_rating),
+                                         amount=str(amount),
+                                         interest_rate=str(interest_rate),
+                                         term_in_days=str(term),
+                                         id_company=int(num))
 
 
 async def secondary_get_two_info(num, headers, cookies):
@@ -170,14 +196,17 @@ async def secondary_get_two_info(num, headers, cookies):
         name = management.get('name', '')  # ФИО человека
         inn_management = management.get('inn', '')  # ИНН человека
         position = management.get('position', '')  # Должность
+        full_text = f'{name} {inn_management} {position}'
+        management_info.append(full_text)
 
-        # Добавляем информацию о человеке в список
-        management_info.append((name, inn_management, position))
+
     for user in response['data']['founders']:
         name = user.get('name', '')  # ФИО человека
         inn_management = user.get('inn', '')  # ИНН человека
         share = user.get('share', '')  # Должность (По дефолту является участником. Это процент)
-        management_info.append((name, inn_management, f'Участник: {float(share) * 100} %'))
+        full_text = f'{name} {inn_management} Участник: {float(share) * 100}%'
+        management_info.append(full_text)
+    companies_data_json = "\n".join(management_info)
     await commands.secondary_add_secondary_placement(id_company=num,
                                            address=str(address),
                                          inn_company=str(inn_details),
@@ -188,7 +217,7 @@ async def secondary_get_two_info(num, headers, cookies):
                                          site_link=str(site),
                                          revenue_for_year=str(revenueForPastYear),
                                          profit_for_year=str(profitForPastYear),
-                                         user_list=str(management_info))
+                                         user_list=companies_data_json)
 
 
 async def secondary_get_three_info(num, headers, cookies):
@@ -258,19 +287,50 @@ async def secondary_get_four_info(num, headers, cookies):
     response = requests.get(f'https://jetlend.ru/invest/api/requests/{num}/loans', cookies=cookies, headers=headers).json()
     # Создаем пустой список для хранения данных о компаниях
     companies_data = []
-
+    sum_amount = 0.0
     # Перебираем каждую компанию и извлекаем необходимые данные
     for loan in response["loans"]:
         amount = loan.get("amount", "")  # Сумма
-        interest_rate = loan.get("interest_rate", "")  # Ставка
-        interest_rate = float(interest_rate) * 100
-        date = loan.get("date", "")  # Срок
 
+        sum_amount += float(amount)
+        interest_rate = loan.get("interest_rate", "")  # Ставка
+        interest_rate = round(float(interest_rate) * 100, 2)
+
+        date = loan.get("date", "")  # Срок
+        date = date.split('T')[0]
+        rating_mapping = {
+            'AAA+': 1,
+            'AAA': 2,
+            'AA+': 3,
+            'AA': 4,
+            'A+': 5,
+            'A': 6,
+            'BBB+': 7,
+            'BBB': 8,
+            'BB+': 9,
+            'BB': 10,
+            'B+': 11,
+            'B': 12,
+            'CCC+': 13,
+            'CCC': 14,
+            'CC+': 15,
+            'CC': 16,
+            'C+': 17,
+            'C': 18
+        }
+
+        # Получение рейтинга в буквах из response
+        rating = loan.get('rating', '')  # Рейтинг
+
+        # Преобразование рейтинга в числовое значение
+        numeric_rating = rating_mapping.get(rating, None)
+        full_text = f'Сумма {amount} Ставка {interest_rate}% Дата {date} Рейтинг {numeric_rating}'
         # Добавляем данные о компании в список
-        companies_data.append((amount, interest_rate, date))
-    companies_data_json = json.dumps(companies_data, ensure_ascii=False)
+        companies_data.append((full_text))
+    companies_data_json = "\n".join(companies_data)
     await commands.secondary_add_fourth_step(id_company=num,
-                                   all_issues=companies_data_json)
+                                            all_issues=companies_data_json,
+                                            sum_amount=str(sum_amount))
 
 
 async def secondary_get_six_info(num, headers, cookies):
@@ -281,12 +341,14 @@ async def secondary_get_six_info(num, headers, cookies):
 
     # Перебираем каждое событие и извлекаем необходимые данные (title, date)
     for event in response["events"]:
-        title = event.get("title", "") # Название события
-        date = event.get("date", "") # Дата
+        title = event.get("title", "")  # Название события
+        date = event.get("date", "")  # Дата
+        date = date.split('T')[0]
+        full_text = f'{title} {date}'
 
         # Добавляем событие в список в формате (title, date)
-        events_list.append((title, date))
-    companies_data_json = json.dumps(events_list, ensure_ascii=False)
+        events_list.append((full_text))
+    companies_data_json = "\n".join(events_list)
     await commands.secondary_add_fifth_step(id_company=num,
                                   events=companies_data_json)
 
@@ -416,12 +478,39 @@ async def get_first_info(num, headers, cookies):
     interest_rate = response['data'].get('interest_rate', '')  # ставка %
     term = response['data'].get('term', '') # Срок в днях
     interest_rate = round(float(interest_rate) * 100, 2)
-    await commands.add_primary_placement(company=company,
+    rating_mapping = {
+        'AAA+': 1,
+        'AAA': 2,
+        'AA+': 3,
+        'AA': 4,
+        'A+': 5,
+        'A': 6,
+        'BBB+': 7,
+        'BBB': 8,
+        'BB+': 9,
+        'BB': 10,
+        'B+': 11,
+        'B': 12,
+        'CCC+': 13,
+        'CCC': 14,
+        'CC+': 15,
+        'CC': 16,
+        'C+': 17,
+        'C': 18
+    }
 
-                                   amount=str(amount),
-                                   interest_rate=str(interest_rate),
-                                   term_in_days=str(term),
-                                   id_company=int(num))
+    # Получение рейтинга в буквах из response
+    rating = response['data'].get('rating', '')  # Рейтинг
+
+    # Преобразование рейтинга в числовое значение
+    numeric_rating = rating_mapping.get(rating, None)
+    await commands.add_primary_placement(company=company,
+                                         rating=str(numeric_rating),
+
+                                         amount=str(amount),
+                                         interest_rate=str(interest_rate),
+                                         term_in_days=str(term),
+                                         id_company=int(num))
 
 
 async def get_two_info(num, headers, cookies):
@@ -448,14 +537,16 @@ async def get_two_info(num, headers, cookies):
         name = management.get('name', '')  # ФИО человека
         inn_management = management.get('inn', '')  # ИНН человека
         position = management.get('position', '')  # Должность
+        full_text = f'{name} {inn_management} {position}'
+        management_info.append((full_text))
 
-        # Добавляем информацию о человеке в список
-        management_info.append((name, inn_management, position))
     for user in response['data']['founders']:
         name = user.get('name', '')  # ФИО человека
         inn_management = user.get('inn', '')  # ИНН человека
         share = user.get('share', '')  # Должность (По дефолту является участником. Это процент)
-        management_info.append((name, inn_management, f'Участник: {float(share) * 100} %'))
+        full_text = f'{name} {inn_management} Участник: {float(share) * 100}%'
+        management_info.append((full_text))
+    companies_data_json = "\n".join(management_info)
     await commands.add_secondary_placement(id_company=num,
                                            address=str(address),
                                          inn_company=str(inn_details),
@@ -466,7 +557,7 @@ async def get_two_info(num, headers, cookies):
                                          site_link=str(site),
                                          revenue_for_year=str(revenueForPastYear),
                                          profit_for_year=str(profitForPastYear),
-                                         user_list=str(management_info))
+                                         user_list=companies_data_json)
 
 
 async def get_three_info(num, headers, cookies):
@@ -536,19 +627,49 @@ async def get_four_info(num, headers, cookies):
     response = requests.get(f'https://jetlend.ru/invest/api/requests/{num}/loans', cookies=cookies, headers=headers).json()
     # Создаем пустой список для хранения данных о компаниях
     companies_data = []
-
+    sum_amount = 0.0
     # Перебираем каждую компанию и извлекаем необходимые данные
     for loan in response["loans"]:
         amount = loan.get("amount", "")  # Сумма
+        sum_amount += float(amount)
         interest_rate = loan.get("interest_rate", "")  # Ставка
-        interest_rate = float(interest_rate) * 100
-        date = loan.get("date", "")  # Срок
+        interest_rate = round(float(interest_rate) * 100, 2)
 
+        date = loan.get("date", "")  # Срок
+        date = date.split('T')[0]
+        rating_mapping = {
+            'AAA+': 1,
+            'AAA': 2,
+            'AA+': 3,
+            'AA': 4,
+            'A+': 5,
+            'A': 6,
+            'BBB+': 7,
+            'BBB': 8,
+            'BB+': 9,
+            'BB': 10,
+            'B+': 11,
+            'B': 12,
+            'CCC+': 13,
+            'CCC': 14,
+            'CC+': 15,
+            'CC': 16,
+            'C+': 17,
+            'C': 18
+        }
+
+        # Получение рейтинга в буквах из response
+        rating = loan.get('rating', '')  # Рейтинг
+
+        # Преобразование рейтинга в числовое значение
+        numeric_rating = rating_mapping.get(rating, None)
+        full_text = f'Сумма {amount} Ставка {interest_rate}% Дата {date} Рейтинг {numeric_rating}'
         # Добавляем данные о компании в список
-        companies_data.append((amount, interest_rate, date))
-    companies_data_json = json.dumps(companies_data, ensure_ascii=False)
+        companies_data.append((full_text))
+    companies_data_json = "\n".join(companies_data)
     await commands.add_fourth_step(id_company=num,
-                                   all_issues=companies_data_json)
+                                   all_issues=companies_data_json,
+                                   sum_amount=str(sum_amount))
 
 
 async def get_six_info(num, headers, cookies):
@@ -559,12 +680,14 @@ async def get_six_info(num, headers, cookies):
 
     # Перебираем каждое событие и извлекаем необходимые данные (title, date)
     for event in response["events"]:
-        title = event.get("title", "") # Название события
-        date = event.get("date", "") # Дата
+        title = event.get("title", "")  # Название события
+        date = event.get("date", "")  # Дата
+        date = date.split('T')[0]
+        full_text = f'{title} {date}'
 
         # Добавляем событие в список в формате (title, date)
-        events_list.append((title, date))
-    companies_data_json = json.dumps(events_list, ensure_ascii=False)
+        events_list.append((full_text))
+    companies_data_json = "\n".join(events_list)
     await commands.add_fifth_step(id_company=num,
                                   events=companies_data_json)
 ########################################################################################################################

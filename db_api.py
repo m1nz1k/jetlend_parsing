@@ -14,6 +14,7 @@ class Primary_Placement_Market(db.Model):
     # Первый заход
     id = db.Column(db.Integer(), primary_key=True, doc="Идентификатор")
     company = db.Column(db.String, doc="Название компании")  # Название компании
+    rating = db.Column(db.String, doc="Рейтинг компании")  # Рейтинг компании
     amount = db.Column(db.String, doc="Сумма")  # Сумма
     interest_rate = db.Column(db.String, doc="Ставка в %")  # Ставка в %
     term_in_days = db.Column(db.String, doc="Срок в днях")  # Срок в днях
@@ -56,6 +57,7 @@ class Primary_Placement_Market(db.Model):
 
     # Четвертый заход
     all_issues = db.Column(db.String, doc="Все выпуски: Сумма, ставка, дата")  # Все выпуски: Сумма, ставка, дата
+    sum_amount = db.Column(db.String, doc="Сумма займов") # Сумма займов.
 
     # Пятый заход
     events = db.Column(db.String, doc="Список событий: Название, дата")  # Список событий: Название, дата
@@ -65,9 +67,10 @@ async def select_id_company(id_company: int):
     return id_company
 
 # Функция для первого захода
-async def add_primary_placement(company, amount, interest_rate, term_in_days, id_company):
+async def add_primary_placement(company, rating, amount, interest_rate, term_in_days, id_company):
     await Primary_Placement_Market.create(
         company=company,
+        rating=rating,
         amount=amount,
         interest_rate=interest_rate,
         term_in_days=term_in_days,
@@ -116,9 +119,9 @@ async def add_third_step(id_company, plantiff_all_time, plantiff_one_year, plant
 
 
 # Функция для четвертого захода
-async def add_fourth_step(id_company, all_issues):
+async def add_fourth_step(id_company, all_issues, sum_amount):
     id_company = await select_id_company(id_company)
-    await id_company.update(all_issues=all_issues).apply()
+    await id_company.update(all_issues=all_issues, sum_amount=sum_amount).apply()
 
 
 # Функция для пятого захода
@@ -135,6 +138,7 @@ class Secondary_Market(db.Model):
     # Первый заход
     id = db.Column(db.Integer(), primary_key=True, doc="Идентификатор")
     company = db.Column(db.String, doc="Название компании")  # Название компании
+    rating = db.Column(db.String, doc="Рейтинг компании")  # Рейтинг компании
     amount = db.Column(db.String, doc="Сумма")  # Сумма
     interest_rate = db.Column(db.String, doc="Ставка в %")  # Ставка в %
     term_in_days = db.Column(db.String, doc="Срок в днях")  # Срок в днях
@@ -177,6 +181,7 @@ class Secondary_Market(db.Model):
 
     # Четвертый заход
     all_issues = db.Column(db.String, doc="Все выпуски: Сумма, ставка, дата")  # Все выпуски: Сумма, ставка, дата
+    sum_amount = db.Column(db.String, doc="Сумма займов")  # Сумма займов.
 
     # Пятый заход
     events = db.Column(db.String, doc="Список событий: Название, дата")  # Список событий: Название, дата
@@ -186,9 +191,10 @@ async def secondary_select_id_company(id_company: int):
     return id_company
 
 # Функция для первого захода
-async def secondary_add_primary_placement(company, amount, interest_rate, term_in_days, id_company):
+async def secondary_add_primary_placement(company, rating, amount, interest_rate, term_in_days, id_company):
     await Secondary_Market.create(
         company=company,
+        rating=rating,
         amount=amount,
         interest_rate=interest_rate,
         term_in_days=term_in_days,
@@ -235,9 +241,9 @@ async def secondary_add_third_step(id_company, plantiff_all_time, plantiff_one_y
 
 
 # Функция для четвертого захода
-async def secondary_add_fourth_step(id_company, all_issues):
+async def secondary_add_fourth_step(id_company, all_issues, sum_amount):
     id_company = await secondary_select_id_company(id_company)
-    await id_company.update(all_issues=all_issues).apply()
+    await id_company.update(all_issues=all_issues, sum_amount=sum_amount).apply()
 
 
 # Функция для пятого захода
