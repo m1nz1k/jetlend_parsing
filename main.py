@@ -58,13 +58,28 @@ async def secondary_main():
         except Exception as ex:
             print(f'Запрос не прошел: {ex}')
             continue
-
+        ids_company_list = []
         for num in response['data']:
+            ids_company_list.append(num['loan_id'])
+
+        # Получаем список id компаний из базы данных
+        db_ids = await commands.secondary_get_all_company_ids()  # Предположим, что у вас есть такая функция
+
+        # Проверяем, есть ли id в БД и удаляем их, если их нет в списке ids_company_list
+        for db_id in db_ids:
+            if db_id not in ids_company_list:
+                company_info = await commands.secondary_select_id_company(db_id)
+                # Если компания найдена в БД, удалить ее
+                if company_info:
+                    await company_info.delete()
+                print(f'Вторичный рынок | Компания с id {db_id} удалена из БД')
+
+        for num in ids_company_list:
             # Проверяем, есть ли id в БД
-            if not await commands.secondary_select_id_company(num['loan_id']):
+            if not await commands.secondary_select_id_company(num):
                 # Если id отсутствует, то добавляем его и получаем информацию
-                await secondary_add_company_and_get_info(num['loan_id'], headers, cookies)
-                print(f'Вторичный рынок | Добавляю в БД компанию с id {num["loan_id"]}')
+                await secondary_add_company_and_get_info(num, headers, cookies)
+                print(f'Вторичный рынок | Добавляю в БД компанию с id {num}')
 
 
         # Пауза на 10 секунд перед следующей проверкой
@@ -397,14 +412,29 @@ async def main():
         except Exception as ex:
             print(f'Запрос не прошел: {ex}')
             continue
-
-
+        ids_company_list = []
         for num in response['requests']:
+            ids_company_list.append(num['id'])
+
+        # Получаем список id компаний из базы данных
+        db_ids = await commands.get_all_company_ids()  # Предположим, что у вас есть такая функция
+
+
+        # Проверяем, есть ли id в БД и удаляем их, если их нет в списке ids_company_list
+        for db_id in db_ids:
+            if db_id not in ids_company_list:
+                company_info = await commands.select_id_company(db_id)
+                # Если компания найдена в БД, удалить ее
+                if company_info:
+                    await company_info.delete()
+                print(f'Рынок первичных размещений | Компания с id {db_id} удалена из БД')
+
+        for num in ids_company_list:
             # Проверяем, есть ли id в БД
-            if not await commands.select_id_company(num['id']):
+            if not await commands.select_id_company(num):
                 # Если id отсутствует, то добавляем его и получаем информацию
-                await add_company_and_get_info(num['id'], headers, cookies)
-                print(f'Рынок первичных размещений | Добавляю в БД компанию с id {num["id"]}')
+                await add_company_and_get_info(num, headers, cookies)
+                print(f'Рынок первичных размещений | Добавляю в БД компанию с id {num}')
 
 
         # Пауза на 10 секунд перед следующей проверкой

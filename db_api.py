@@ -66,6 +66,11 @@ async def select_id_company(id_company: int):
     id_company = await Primary_Placement_Market.query.where(Primary_Placement_Market.id_company == id_company).gino.first()
     return id_company
 
+async def get_all_company_ids():
+    query = Primary_Placement_Market.query.distinct(Primary_Placement_Market.id_company)
+    result = await query.gino.all()
+    return [row.id_company for row in result] if result else []
+
 # Функция для первого захода
 async def add_primary_placement(company, rating, amount, interest_rate, term_in_days, id_company):
     await Primary_Placement_Market.create(
@@ -189,6 +194,11 @@ class Secondary_Market(db.Model):
 async def secondary_select_id_company(id_company: int):
     id_company = await Secondary_Market.query.where(Secondary_Market.id_company == id_company).gino.first()
     return id_company
+
+async def secondary_get_all_company_ids():
+    query = Secondary_Market.query.distinct(Secondary_Market.id_company)
+    result = await query.gino.all()
+    return [row.id_company for row in result] if result else []
 
 # Функция для первого захода
 async def secondary_add_primary_placement(company, rating, amount, interest_rate, term_in_days, id_company):
