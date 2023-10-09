@@ -46,47 +46,62 @@ params = {
     'sort_field': 'ytm',
 }
 
-response = requests.get(f'https://jetlend.ru/invest/api/requests/16525/loans', cookies=cookies, headers=headers).json()
-# Создаем пустой список для хранения данных о компаниях
-companies_data = []
-sum_amount = 0.0
-# Перебираем каждую компанию и извлекаем необходимые данные
-for loan in response["loans"]:
-    amount = loan.get("amount", "")  # Сумма
-    sum_amount += float(amount)
-    interest_rate = loan.get("interest_rate", "")  # Ставка
-    interest_rate = round(float(interest_rate) * 100, 2)
+response = requests.get(f'https://jetlend.ru/invest/api/requests/13434/details', cookies=cookies,
+                        headers=headers).json()
+# Извлечение значений из раздела "details"
+details = response['data'].get('details', {})
+address = details.get('address', '')  # Адрес
+inn_details = details.get('inn', '')  # ИНН организации
+ogrn = details.get('ogrn', '')  # ОГРН организации
+primaryCatergory = details.get('primaryCatergory', '')  # Категория компании
+profile = details.get('profile', '')  # Ссылка на профиль
+registrationDate = details.get('registrationDate', '')  # Дата регистрации
+site = details.get('site', '')  # Сайт компании
+revenueForPastYear = details.get('revenueForPastYear', '')  # Выручка за год
+profitForPastYear = details.get('profitForPastYear', '')  # Прибыль за год
 
-    date = loan.get("date", "")  # Срок
-    date = date.split('T')[0]
-    rating_mapping = {
-        'AAA+': 1,
-        'AAA': 2,
-        'AA+': 3,
-        'AA': 4,
-        'A+': 5,
-        'A': 6,
-        'BBB+': 7,
-        'BBB': 8,
-        'BB+': 9,
-        'BB': 10,
-        'B+': 11,
-        'B': 12,
-        'CCC+': 13,
-        'CCC': 14,
-        'CC+': 15,
-        'CC': 16,
-        'C+': 17,
-        'C': 18
-    }
+# Извлечение значений из раздела "management"
+management_info = []  # Создаем пустой список для хранения информации о человеках
+management = response['data'].get('management', {})  # Получаем раздел "management" или пустой словарь, если его нет
 
-    # Получение рейтинга в буквах из response
-    rating = loan.get('rating', '')  # Рейтинг
+# Перебираем каждого человека в разделе "management"
+if isinstance(management, dict):
+    name = management.get('name', '')  # ФИО человека
+    inn_management = management.get('inn', '')  # ИНН человека
+    position = management.get('position', '')  # Должность
+    full_text = f'{name} {inn_management} {position}'
+    management_info.append(full_text)
 
-    # Преобразование рейтинга в числовое значение
-    numeric_rating = rating_mapping.get(rating, None)
-    full_text = f'Сумма {amount} Ставка {interest_rate}% Дата {date} Рейтинг {numeric_rating}'
-    # Добавляем данные о компании в список
-    companies_data.append((full_text))
-companies_data_json = "\n".join(companies_data)
+for user in response['data']['founders']:
+    name = user.get('name', '')  # ФИО человека
+    inn_management = user.get('inn', '')  # ИНН человека
+    share = user.get('share', '')  # Должность (По дефолту является участником. Это процент)
+    print(share)
+    if share is not None:
+        try:
+            share_float = float(share)
+            full_text = f'{name} {inn_management} Участник: {share_float * 100}%'
+        except Exception:
+            full_text = f'{name} {inn_management} Участник'
+    else:
+        full_text = f'{name} {inn_management} Участник'
 
+    management_info.append(full_text)
+companies_data_json = "\n".join(management_info)
+
+print("Address:", address)
+print("INN details:", inn_details)
+print("OGRN:", ogrn)
+print("Primary Category:", primaryCatergory)
+print("Profile:", profile)
+print("Registration Date:", registrationDate)
+print("Site:", site)
+print("Revenue for Past Year:", revenueForPastYear)
+print("Profit for Past Year:", profitForPastYear)
+
+print("Management Info:")
+for item in management_info:
+    print(item)
+
+print("Companies Data JSON:")
+print(companies_data_json)

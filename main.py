@@ -52,9 +52,9 @@ async def secondary_main():
         'sort_field': 'ytm',
     }
     while True:
-        # Отправляем запрос и получаем список id компаний
         try:
-            response = requests.get('https://jetlend.ru/invest/api/exchange/loans', params=params, cookies=cookies, headers=headers).json()
+            response = requests.get('https://jetlend.ru/invest/api/exchange/loans', params=params, cookies=cookies,
+                                    headers=headers).json()
         except Exception as ex:
             print(f'Запрос не прошел: {ex}')
             continue
@@ -62,88 +62,32 @@ async def secondary_main():
         for num in response['data']:
             ids_company_list.append(num['loan_id'])
 
-        # Получаем список id компаний из базы данных
-        db_ids = await commands.secondary_get_all_company_ids()  # Предположим, что у вас есть такая функция
-
-        # Проверяем, есть ли id в БД и удаляем их, если их нет в списке ids_company_list
-        for db_id in db_ids:
-            if db_id not in ids_company_list:
-                company_info = await commands.secondary_select_id_company(db_id)
-                # Если компания найдена в БД, удалить ее
-                if company_info:
-                    await company_info.delete()
-                print(f'Вторичный рынок | Компания с id {db_id} удалена из БД')
+        db_ids = await commands.secondary_get_all_company_ids()
 
         for num in ids_company_list:
             # Проверяем, есть ли id в БД
             if not await commands.secondary_select_id_company(num):
                 # Если id отсутствует, то добавляем его и получаем информацию
-                await secondary_add_company_and_get_info(num, headers, cookies)
-                print(f'Вторичный рынок | Добавляю в БД компанию с id {num}')
-
+                result = await secondary_add_company_and_get_info(num, headers, cookies)
+                if result:
+                    print(f'Вторичный рынок | Добавляю в БД компанию с id {num}')
 
         # Пауза на 10 секунд перед следующей проверкой
         time.sleep(10)
 
-# Функция для добавления компании в БД и получения информации
+
 async def secondary_add_company_and_get_info(company_id, headers, cookies):
     try:
         await secondary_get_first_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.secondary_select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await secondary_get_two_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.secondary_select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await secondary_get_three_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.secondary_select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await secondary_get_four_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.secondary_select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await secondary_get_six_info(company_id, headers, cookies)
+        print(f'Вторичный рынок | Компания {company_id} успешно добавлена.')
+        return True  # Успешно добавлено
     except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.secondary_select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    print(f'Вторичный рынок | Компания {company_id} успешно добавлена.')
-
+        print(f'Вторичный рынок | Ошибка со стороны сервера - \n{ex}')
+        return False  # Произошла ошибка
 async def secondary_get_first_info(num, headers, cookies):
     response = requests.get(f'https://jetlend.ru/invest/api/requests/{num}/info', cookies=cookies, headers=headers).json()
     # Извлечение значений
@@ -219,7 +163,15 @@ async def secondary_get_two_info(num, headers, cookies):
         name = user.get('name', '')  # ФИО человека
         inn_management = user.get('inn', '')  # ИНН человека
         share = user.get('share', '')  # Должность (По дефолту является участником. Это процент)
-        full_text = f'{name} {inn_management} Участник: {float(share) * 100}%'
+        if share is not None:
+            try:
+                share_float = float(share)
+                full_text = f'{name} {inn_management} Участник: {share_float * 100}%'
+            except Exception:
+                full_text = f'{name} {inn_management} Участник'
+        else:
+            full_text = f'{name} {inn_management} Участник'
+
         management_info.append(full_text)
     companies_data_json = "\n".join(management_info)
     await commands.secondary_add_secondary_placement(id_company=num,
@@ -406,9 +358,9 @@ async def main():
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
     }
     while True:
-        # Отправляем запрос и получаем список id компаний
         try:
-            response = requests.get('https://jetlend.ru/invest/api/requests/waiting', cookies=cookies, headers=headers).json()
+            response = requests.get('https://jetlend.ru/invest/api/requests/waiting', cookies=cookies,
+                                    headers=headers).json()
         except Exception as ex:
             print(f'Запрос не прошел: {ex}')
             continue
@@ -416,88 +368,32 @@ async def main():
         for num in response['requests']:
             ids_company_list.append(num['id'])
 
-        # Получаем список id компаний из базы данных
-        db_ids = await commands.get_all_company_ids()  # Предположим, что у вас есть такая функция
-
-
-        # Проверяем, есть ли id в БД и удаляем их, если их нет в списке ids_company_list
-        for db_id in db_ids:
-            if db_id not in ids_company_list:
-                company_info = await commands.select_id_company(db_id)
-                # Если компания найдена в БД, удалить ее
-                if company_info:
-                    await company_info.delete()
-                print(f'Рынок первичных размещений | Компания с id {db_id} удалена из БД')
+        db_ids = await commands.get_all_company_ids()
 
         for num in ids_company_list:
             # Проверяем, есть ли id в БД
             if not await commands.select_id_company(num):
                 # Если id отсутствует, то добавляем его и получаем информацию
-                await add_company_and_get_info(num, headers, cookies)
-                print(f'Рынок первичных размещений | Добавляю в БД компанию с id {num}')
-
+                result = await add_company_and_get_info(num, headers, cookies)
+                if result:
+                    print(f'Рынок первичных размещений | Добавляю в БД компанию с id {num}')
 
         # Пауза на 10 секунд перед следующей проверкой
         time.sleep(10)
 
-# Функция для добавления компании в БД и получения информации
+
 async def add_company_and_get_info(company_id, headers, cookies):
     try:
         await get_first_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await get_two_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await get_three_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await get_four_info(company_id, headers, cookies)
-    except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    try:
         await get_six_info(company_id, headers, cookies)
+        print(f'Рынок первичных размещений | Компания {company_id} успешно добавлена.')
+        return True  # Успешно добавлено
     except Exception as ex:
-        print(f'Сервис временно не доступен: {ex}')
-        # Получить информацию о компании
-        company_info = await commands.select_id_company(company_id)
-
-        # Если компания найдена в БД, удалить ее
-        if company_info:
-            await company_info.delete()
-        return False
-    print(f'Рынок первичных размещений | Компания {company_id} успешно добавлена.')
+        print(f'Рынок первичных размещений | Ошибка со стороны сервера \n{ex}')
+        return False  # Произошла ошибка
 
 async def get_first_info(num, headers, cookies):
     response = requests.get(f'https://jetlend.ru/invest/api/requests/{num}/info', cookies=cookies, headers=headers).json()
@@ -574,7 +470,14 @@ async def get_two_info(num, headers, cookies):
         name = user.get('name', '')  # ФИО человека
         inn_management = user.get('inn', '')  # ИНН человека
         share = user.get('share', '')  # Должность (По дефолту является участником. Это процент)
-        full_text = f'{name} {inn_management} Участник: {float(share) * 100}%'
+        if share is not None:
+            try:
+                share_float = float(share)
+                full_text = f'{name} {inn_management} Участник: {share_float * 100}%'
+            except Exception:
+                full_text = f'{name} {inn_management} Участник'
+        else:
+            full_text = f'{name} {inn_management} Участник'
         management_info.append((full_text))
     companies_data_json = "\n".join(management_info)
     await commands.add_secondary_placement(id_company=num,
