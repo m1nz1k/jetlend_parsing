@@ -62,7 +62,18 @@ async def secondary_main():
         for num in response['data']:
             ids_company_list.append(num['loan_id'])
 
+        ################## получаем список компаний, которые есть с БД, но нет в списке и удаляем ######################
+        ids_to_delete = []
+
         db_ids = await commands.secondary_get_all_company_ids()
+
+        for db_id in db_ids:
+            if db_id not in ids_company_list:
+                ids_to_delete.append(db_id)
+
+        for id_to_delete in ids_to_delete:
+            await commands.secondary_delete_company_by_id(id_to_delete)
+        ################################################################################################################
 
         for num in ids_company_list:
             # Проверяем, есть ли id в БД
@@ -368,7 +379,18 @@ async def main():
         for num in response['requests']:
             ids_company_list.append(num['id'])
 
+        ################## получаем список компаний, которые есть с БД, но нет в списке и удаляем ######################
+        ids_to_delete = []
+
         db_ids = await commands.get_all_company_ids()
+
+        for db_id in db_ids:
+            if db_id not in ids_company_list:
+                ids_to_delete.append(db_id)
+
+        for id_to_delete in ids_to_delete:
+            await commands.delete_company_by_id(id_to_delete)
+        ################################################################################################################
 
         for num in ids_company_list:
             # Проверяем, есть ли id в БД

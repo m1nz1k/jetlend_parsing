@@ -66,6 +66,13 @@ async def select_id_company(id_company: int):
     id_company = await Primary_Placement_Market.query.where(Primary_Placement_Market.id_company == id_company).gino.first()
     return id_company
 
+async def delete_company_by_id(id_company_to_delete):
+    condition = (Primary_Placement_Market.id_company == id_company_to_delete)
+
+    await Primary_Placement_Market.delete.where(condition).gino.status()
+
+
+
 async def get_all_company_ids():
     query = Primary_Placement_Market.query.distinct(Primary_Placement_Market.id_company)
     result = await query.gino.all()
@@ -194,6 +201,11 @@ class Secondary_Market(db.Model):
 async def secondary_select_id_company(id_company: int):
     id_company = await Secondary_Market.query.where(Secondary_Market.id_company == id_company).gino.first()
     return id_company
+
+async def secondary_delete_company_by_id(id_company_to_delete):
+    condition = (Secondary_Market.id_company == id_company_to_delete)
+
+    await Secondary_Market.delete.where(condition).gino.status()
 
 async def secondary_get_all_company_ids():
     query = Secondary_Market.query.distinct(Secondary_Market.id_company)
