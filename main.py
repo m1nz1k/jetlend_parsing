@@ -165,8 +165,8 @@ async def secondary_get_two_info(num, headers, cookies):
     if isinstance(management, dict):
         name = management.get('name', '')  # ФИО человека
         inn_management = management.get('inn', '')  # ИНН человека
-        position = management.get('position', '')  # Должность
-        full_text = f'{name} {inn_management} {position}'
+        # position = management.get('position', '')  # Должность
+        full_text = f'{name}, {inn_management}'
         management_info.append(full_text)
 
 
@@ -177,11 +177,11 @@ async def secondary_get_two_info(num, headers, cookies):
         if share is not None:
             try:
                 share_float = float(share)
-                full_text = f'{name} {inn_management} Участник: {share_float * 100}%'
+                full_text = f'{name}, {inn_management}'
             except Exception:
-                full_text = f'{name} {inn_management} Участник'
+                full_text = f'{name}, {inn_management}'
         else:
-            full_text = f'{name} {inn_management} Участник'
+            full_text = f'{name}, {inn_management}'
 
         management_info.append(full_text)
     companies_data_json = "\n".join(management_info)
@@ -484,8 +484,8 @@ async def get_two_info(num, headers, cookies):
     if isinstance(management, dict):
         name = management.get('name', '')  # ФИО человека
         inn_management = management.get('inn', '')  # ИНН человека
-        position = management.get('position', '')  # Должность
-        full_text = f'{name} {inn_management} {position}'
+        # position = management.get('position', '')  # Должность
+        full_text = f'{name}, {inn_management}'
         management_info.append((full_text))
 
     for user in response['data']['founders']:
@@ -495,11 +495,11 @@ async def get_two_info(num, headers, cookies):
         if share is not None:
             try:
                 share_float = float(share)
-                full_text = f'{name} {inn_management} Участник: {share_float * 100}%'
+                full_text = f'{name}, {inn_management}'
             except Exception:
-                full_text = f'{name} {inn_management} Участник'
+                full_text = f'{name}, {inn_management}'
         else:
-            full_text = f'{name} {inn_management} Участник'
+            full_text = f'{name}, {inn_management}'
         management_info.append((full_text))
     companies_data_json = "\n".join(management_info)
     await commands.add_secondary_placement(id_company=num,
