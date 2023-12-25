@@ -11,7 +11,6 @@ import time
 async def secondary_main():
     cookies = {
         '_jl_uid': 'vETZ4WUILvEgftokBER4Ag==',
-        '_gcl_au': '1.1.1801966748.1695035050',
         'referrer': 'https://client.work-zilla.com/',
         '_ym_uid': '1695035051576708091',
         '_ym_d': '1695035051',
@@ -21,15 +20,17 @@ async def secondary_main():
         '_ttp': 'rALbsDXw_v8KYn8xszNzyrPqCrx',
         '_clck': 'flvtcj|2|fgs|0|1373',
         'jl_features': 'headerFeatures%3Dheader_1_counter%3BfeedbacksFeature%3Ddefault%3Binvestor-page%3Dnext',
+        '_gcl_au': '1.1.2116646024.1703077132',
         '_ym_isad': '1',
-        '_gid': 'GA1.2.1095918455.1702027356',
+        '_gid': 'GA1.2.1856165267.1703496775',
         '_ym_visorc': 'b',
-        'csrftoken': 'uykdPFh6VJvOwfywLUkhEgDxc765ttL2',
-        'sessionid': 's0xm7508gyb1dmr4mryr5ltpiuf0ngo5',
-        '_ga_NR0DV46HQK': 'GS1.1.1702027355.33.1.1702027418.60.0.0',
-        '_ga': 'GA1.2.97225234.1695035049',
-        'tmr_detect': '1%7C1702027418627',
         '_gat': '1',
+        '_gat_gtag_UA_127214708_1': '1',
+        'csrftoken': '307DLrdxp1OhItwhMiFQQ6tCOvawqMBo',
+        'sessionid': 'he1f4a0kbf27quom3bivoxemamm4lmyc',
+        '_ga': 'GA1.1.97225234.1695035049',
+        'tmr_detect': '1%7C1703496853971',
+        '_ga_NR0DV46HQK': 'GS1.1.1703496774.35.1.1703496857.47.0.0',
     }
 
     headers = {
@@ -37,7 +38,7 @@ async def secondary_main():
         'accept': 'application/json, text/plain, */*',
         'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         'content-type': 'application/json;charset=utf-8',
-        # 'cookie': '_jl_uid=vETZ4WUILvEgftokBER4Ag==; _gcl_au=1.1.1801966748.1695035050; referrer=https://client.work-zilla.com/; _ym_uid=1695035051576708091; _ym_d=1695035051; tmr_lvid=79a9abd783270f5e68cbc6f0ba57bfa2; tmr_lvidTS=1695035055405; _tt_enable_cookie=1; _ttp=rALbsDXw_v8KYn8xszNzyrPqCrx; _clck=flvtcj|2|fgs|0|1373; jl_features=headerFeatures%3Dheader_1_counter%3BfeedbacksFeature%3Ddefault%3Binvestor-page%3Dnext; _ym_isad=1; _gid=GA1.2.1095918455.1702027356; _ym_visorc=b; csrftoken=uykdPFh6VJvOwfywLUkhEgDxc765ttL2; sessionid=s0xm7508gyb1dmr4mryr5ltpiuf0ngo5; _ga_NR0DV46HQK=GS1.1.1702027355.33.1.1702027418.60.0.0; _ga=GA1.2.97225234.1695035049; tmr_detect=1%7C1702027418627; _gat=1',
+        # 'cookie': '_jl_uid=vETZ4WUILvEgftokBER4Ag==; referrer=https://client.work-zilla.com/; _ym_uid=1695035051576708091; _ym_d=1695035051; tmr_lvid=79a9abd783270f5e68cbc6f0ba57bfa2; tmr_lvidTS=1695035055405; _tt_enable_cookie=1; _ttp=rALbsDXw_v8KYn8xszNzyrPqCrx; _clck=flvtcj|2|fgs|0|1373; jl_features=headerFeatures%3Dheader_1_counter%3BfeedbacksFeature%3Ddefault%3Binvestor-page%3Dnext; _gcl_au=1.1.2116646024.1703077132; _ym_isad=1; _gid=GA1.2.1856165267.1703496775; _ym_visorc=b; _gat=1; _gat_gtag_UA_127214708_1=1; csrftoken=307DLrdxp1OhItwhMiFQQ6tCOvawqMBo; sessionid=he1f4a0kbf27quom3bivoxemamm4lmyc; _ga=GA1.1.97225234.1695035049; tmr_detect=1%7C1703496853971; _ga_NR0DV46HQK=GS1.1.1703496774.35.1.1703496857.47.0.0',
         'referer': 'https://jetlend.ru/invest/v3/market',
         'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
         'sec-ch-ua-mobile': '?0',
@@ -338,7 +339,6 @@ async def secondary_get_six_info(num, headers, cookies):
 async def main():
     cookies = {
         '_jl_uid': 'vETZ4WUILvEgftokBER4Ag==',
-        '_gcl_au': '1.1.1801966748.1695035050',
         'referrer': 'https://client.work-zilla.com/',
         '_ym_uid': '1695035051576708091',
         '_ym_d': '1695035051',
@@ -348,15 +348,17 @@ async def main():
         '_ttp': 'rALbsDXw_v8KYn8xszNzyrPqCrx',
         '_clck': 'flvtcj|2|fgs|0|1373',
         'jl_features': 'headerFeatures%3Dheader_1_counter%3BfeedbacksFeature%3Ddefault%3Binvestor-page%3Dnext',
+        '_gcl_au': '1.1.2116646024.1703077132',
         '_ym_isad': '1',
-        '_gid': 'GA1.2.1095918455.1702027356',
+        '_gid': 'GA1.2.1856165267.1703496775',
         '_ym_visorc': 'b',
-        'csrftoken': 'uykdPFh6VJvOwfywLUkhEgDxc765ttL2',
-        'sessionid': 's0xm7508gyb1dmr4mryr5ltpiuf0ngo5',
-        '_ga_NR0DV46HQK': 'GS1.1.1702027355.33.1.1702027418.60.0.0',
-        '_ga': 'GA1.2.97225234.1695035049',
-        'tmr_detect': '1%7C1702027418627',
         '_gat': '1',
+        '_gat_gtag_UA_127214708_1': '1',
+        'csrftoken': '307DLrdxp1OhItwhMiFQQ6tCOvawqMBo',
+        'sessionid': 'he1f4a0kbf27quom3bivoxemamm4lmyc',
+        '_ga': 'GA1.1.97225234.1695035049',
+        'tmr_detect': '1%7C1703496853971',
+        '_ga_NR0DV46HQK': 'GS1.1.1703496774.35.1.1703496857.47.0.0',
     }
 
     headers = {
@@ -364,7 +366,7 @@ async def main():
         'accept': 'application/json, text/plain, */*',
         'accept-language': 'ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7',
         'content-type': 'application/json;charset=utf-8',
-        # 'cookie': '_jl_uid=vETZ4WUILvEgftokBER4Ag==; _gcl_au=1.1.1801966748.1695035050; referrer=https://client.work-zilla.com/; _ym_uid=1695035051576708091; _ym_d=1695035051; tmr_lvid=79a9abd783270f5e68cbc6f0ba57bfa2; tmr_lvidTS=1695035055405; _tt_enable_cookie=1; _ttp=rALbsDXw_v8KYn8xszNzyrPqCrx; _clck=flvtcj|2|fgs|0|1373; jl_features=headerFeatures%3Dheader_1_counter%3BfeedbacksFeature%3Ddefault%3Binvestor-page%3Dnext; _ym_isad=1; _gid=GA1.2.1095918455.1702027356; _ym_visorc=b; csrftoken=uykdPFh6VJvOwfywLUkhEgDxc765ttL2; sessionid=s0xm7508gyb1dmr4mryr5ltpiuf0ngo5; _ga_NR0DV46HQK=GS1.1.1702027355.33.1.1702027418.60.0.0; _ga=GA1.2.97225234.1695035049; tmr_detect=1%7C1702027418627; _gat=1',
+        # 'cookie': '_jl_uid=vETZ4WUILvEgftokBER4Ag==; referrer=https://client.work-zilla.com/; _ym_uid=1695035051576708091; _ym_d=1695035051; tmr_lvid=79a9abd783270f5e68cbc6f0ba57bfa2; tmr_lvidTS=1695035055405; _tt_enable_cookie=1; _ttp=rALbsDXw_v8KYn8xszNzyrPqCrx; _clck=flvtcj|2|fgs|0|1373; jl_features=headerFeatures%3Dheader_1_counter%3BfeedbacksFeature%3Ddefault%3Binvestor-page%3Dnext; _gcl_au=1.1.2116646024.1703077132; _ym_isad=1; _gid=GA1.2.1856165267.1703496775; _ym_visorc=b; _gat=1; _gat_gtag_UA_127214708_1=1; csrftoken=307DLrdxp1OhItwhMiFQQ6tCOvawqMBo; sessionid=he1f4a0kbf27quom3bivoxemamm4lmyc; _ga=GA1.1.97225234.1695035049; tmr_detect=1%7C1703496853971; _ga_NR0DV46HQK=GS1.1.1703496774.35.1.1703496857.47.0.0',
         'referer': 'https://jetlend.ru/invest/v3/market',
         'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
         'sec-ch-ua-mobile': '?0',
